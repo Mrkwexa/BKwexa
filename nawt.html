@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نەوت | MR KWEXA</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+        :root{--bg:#03050a;--card:rgba(12,17,29,0.9);--input:rgba(20,28,48,0.9);--text:#edf0f7;--text2:#8b92a8;--purple:#a87fcb;--green:#4cc98b;--red:#e85d6c;--border:rgba(255,255,255,0.06);--radius:14px;--radius2:8px;}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;font-size:14px;}
+        .navbar{background:rgba(8,12,23,0.95);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:100;}
+        .nav-brand{color:#e2b14a;font-weight:700;font-size:15px;text-decoration:none;}
+        .nav-tabs{display:flex;gap:3px;flex-wrap:wrap;}
+        .nav-tab{padding:6px 10px;border:1.5px solid rgba(255,255,255,0.08);background:transparent;color:var(--text2);border-radius:18px;font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;}
+        .nav-tab.active{background:var(--purple);color:#fff;border-color:transparent;font-weight:700;}
+        .nav-back{color:var(--text2);text-decoration:none;font-size:11px;}
+        .main-content{max-width:700px;margin:10px auto;padding:0 12px 40px;}
+        .page-title{text-align:center;margin-bottom:10px;font-size:1.1rem;font-weight:800;color:var(--purple);}
+        .calc-box{background:var(--card);border:2px solid var(--purple);border-radius:var(--radius);padding:10px;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+        .calc-box input{background:var(--input);border:1px solid rgba(255,255,255,0.08);color:#fff;padding:6px 8px;border-radius:var(--radius2);font-size:12px;outline:none;min-width:60px;}
+        .calc-box input.price-input{border-color:var(--purple);font-weight:700;min-width:80px;}
+        .calc-box .result{background:rgba(0,0,0,0.3);border:1px solid var(--green);color:var(--green);padding:6px 8px;border-radius:var(--radius2);font-weight:800;text-align:center;min-width:90px;}
+        .calc-box span{font-size:11px;color:var(--text2);}
+        .btn-reset{background:var(--red);color:#fff;border:none;padding:5px 12px;border-radius:18px;font-size:10px;cursor:pointer;margin-right:auto;}
+        .card{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:var(--radius);padding:10px 12px;margin-bottom:6px;}
+        .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+        .card-title{font-weight:700;font-size:13px;color:var(--purple);display:flex;align-items:center;gap:5px;}
+        .card-num{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--purple);color:#fff;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+        .liter-badge{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,0.3);padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;color:var(--green);}
+        .btn-reset-one{background:transparent;border:1px solid var(--red);color:var(--red);padding:2px 6px;border-radius:8px;font-size:9px;cursor:pointer;}
+        .card-body{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:end;}
+        .fg{display:flex;flex-direction:column;gap:2px;}
+        .fg label{font-size:9px;color:var(--text2);font-weight:600;}
+        .fg input{width:100%;padding:5px 8px;background:var(--input);border:1px solid rgba(255,255,255,0.08);color:#fff;border-radius:var(--radius2);font-size:11px;outline:none;}
+        .fg input[readonly]{background:rgba(0,0,0,0.3);border-style:dashed;color:#545b72;}
+        .btn-add{background:var(--purple);color:#fff;border:none;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;height:26px;}
+        .toast{position:fixed;bottom:15px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:8px 16px;border-radius:16px;font-size:12px;font-weight:600;z-index:2000;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+        .toast.show{opacity:1;}
+        @media(max-width:500px){.card-body{grid-template-columns:1fr 1fr;}.calc-box{flex-direction:column;}}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="nav-brand">⛽ MR KWEXA</a>
+        <div class="nav-tabs">
+            <a href="normal.html" class="nav-tab">نۆڕماڵ</a>
+            <a href="muhsin.html" class="nav-tab">محسن</a>
+            <a href="gaz.html" class="nav-tab">گاز</a>
+            <a href="ghaz.html" class="nav-tab">غاز</a>
+            <a href="nawt.html" class="nav-tab active">نەوت</a>
+            <a href="super.html" class="nav-tab">سوپەر</a>
+        </div>
+        <a href="index.html" class="nav-back">← گەڕانەوە</a>
+    </nav>
+    <div class="main-content" id="mainContent"><div style="text-align:center;padding:50px;color:var(--text2);">⏳ چاوەڕێ...</div></div>
+    <div class="toast" id="toast"></div>
+    <script>
+        firebase.initializeApp({projectId:"mrlwexa",databaseURL:"https://mrlwexa-default-rtdb.firebaseio.com"});
+        var db=firebase.database();
+        var PAGE='nawt',COUNT=2,TITLE='نەوت',ICON='🛢️';
+        var appData=[],toastTimer;
+        function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove('show');},2000);}
+        function getTotal(){var t=0;for(var i=0;i<appData.length;i++)t+=appData[i].liter||0;return t;}
+        function calcMoney(){var pi=document.getElementById('priceInput');var tm=document.getElementById('totalMoney');if(!pi||!tm)return;var pv=parseFloat(pi.value);var tl=getTotal();tm.value=(!isNaN(pv)&&pv>0)?(pv*tl).toFixed(2):'0.00';}
+        function addEntry(idx){var ad=appData[idx];var ni=document.getElementById('ni-'+idx);var ri=document.getElementById('ri-'+idx);if(!ni||!ri)return;var nv=parseFloat(ni.value);var rv=ri.value?parseFloat(ri.value):NaN;if(isNaN(nv)||nv<0){toast('⚠️ نرخی نوێ بنووسە');ni.focus();return;}if(isNaN(rv)){ad.nrekhiRabrdu=nv;toast('✅ نرخی یەکەم: '+nv.toFixed(2));}else{var d=nv-rv;ad.liter=d;ad.nrekhiRabrdu=nv;toast('✅ جیاوازی: '+(d>=0?'+':'')+d.toFixed(2));}db.ref(PAGE).set(appData);ni.value='';ni.focus();calcMoney();}
+        function resetOne(idx){if(confirm('لیتری عەداد '+(idx+1)+' سفر دەکرێتەوە؟')){appData[idx].liter=0;db.ref(PAGE).set(appData);toast('🗑️ سفر کرا');}}
+        function resetAll(){if(confirm('هەموو لیترەکان سفر دەکرێنەوە؟')){for(var i=0;i<appData.length;i++)appData[i].liter=0;db.ref(PAGE).set(appData);toast('🗑️ سفر کرانەوە');}}
+        function renderPage(){var tl=getTotal();var h='<div class="page-title">'+ICON+' بەشی '+TITLE+'</div>';h+='<div class="calc-box">';h+='<span>💵 نرخ</span><input type="number" step="0.01" id="priceInput" class="price-input" placeholder="نرخ..." oninput="calcMoney()">';h+='<span>×</span><span>🧮</span><input type="text" value="'+tl.toFixed(2)+'" readonly style="text-align:center;font-weight:700;color:var(--green);">';h+='<span>=</span><span>💲</span><input type="text" id="totalMoney" class="result" value="0.00" readonly>';h+='<button class="btn-reset" onclick="resetAll()">🗑️ سفرکردنەوە</button>';h+='</div>';for(var i=0;i<COUNT;i++){var ad=appData[i]||{nrekhiRabrdu:'',liter:0};h+='<div class="card"><div class="card-header">';h+='<div class="card-title"><span class="card-num">'+(i+1)+'</span> '+ICON+' عەداد '+(i+1)+'</div>';h+='<div class="liter-badge">🧮 '+(ad.liter||0).toFixed(2)+' <button class="btn-reset-one" onclick="resetOne('+i+')">✕</button></div>';h+='</div><div class="card-body">';h+='<div class="fg"><label>📋 نرخی ڕابردوو</label><input type="number" step="0.01" id="ri-'+i+'" value="'+(ad.nrekhiRabrdu||'')+'" readonly></div>';h+='<div class="fg"><label>🆕 نرخی نوێ</label><input type="number" step="0.01" id="ni-'+i+'" placeholder="بنووسە..." onkeydown="if(event.key===\'Enter\')addEntry('+i+')"></div>';h+='<button class="btn-add" onclick="addEntry('+i+')">➕</button>';h+='</div></div>';}document.getElementById('mainContent').innerHTML=h;}
+        db.ref(PAGE).on('value',function(snap){var data=snap.val();if(data&&Array.isArray(data)&&data.length===COUNT){appData=data;}else{appData=[];for(var i=0;i<COUNT;i++)appData.push({nrekhiRabrdu:'',liter:0});db.ref(PAGE).set(appData);}renderPage();});
+    </script>
+</body>
+</html>
