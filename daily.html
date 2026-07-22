@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>کۆی ڕۆژانە | MR KWEXA</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+        :root{--bg:#03050a;--card:rgba(12,17,29,0.9);--input:rgba(20,28,48,0.9);--text:#edf0f7;--text2:#8b92a8;--gold:#e2b14a;--green:#4cc98b;--red:#e85d6c;--blue:#5b9bd5;--orange:#f09050;--teal:#20c9a6;--purple:#a87fcb;--border:rgba(255,255,255,0.06);--radius:14px;--radius2:8px;}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;font-size:14px;}
+        .navbar{background:rgba(8,12,23,0.95);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:100;}
+        .nav-brand{color:var(--gold);font-weight:700;font-size:15px;text-decoration:none;}
+        .nav-back{color:var(--text2);text-decoration:none;font-size:11px;}
+        .main-content{max-width:750px;margin:10px auto;padding:0 12px 40px;}
+        .page-title{text-align:center;margin-bottom:15px;font-size:1.2rem;font-weight:800;color:var(--gold);}
+
+        /* Date Picker */
+        .date-picker-row{display:flex;gap:10px;align-items:center;margin-bottom:15px;flex-wrap:wrap;}
+        .date-picker-row input{flex:1;min-width:150px;padding:10px;background:var(--input);border:2px solid var(--gold);color:#fff;border-radius:25px;font-size:14px;outline:none;text-align:center;}
+        .date-picker-row button{background:var(--gold);color:#000;border:none;padding:10px 20px;border-radius:25px;font-size:13px;font-weight:700;cursor:pointer;}
+        .date-nav{display:flex;gap:5px;align-items:center;}
+        .btn-nav{background:var(--card);border:1px solid var(--border);color:#fff;padding:8px 12px;border-radius:20px;font-size:12px;cursor:pointer;}
+        .btn-nav:hover{border-color:var(--gold);}
+
+        /* Save Section */
+        .save-section{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;}
+        @media(max-width:500px){.save-section{grid-template-columns:1fr;}}
+        .save-card{background:var(--card);border-radius:var(--radius);padding:15px;text-align:center;}
+        .save-card.morning{border:2px solid var(--orange);}
+        .save-card.night{border:2px solid var(--blue);}
+        .save-card h3{font-size:14px;font-weight:700;margin-bottom:8px;}
+        .save-card.morning h3{color:var(--orange);}
+        .save-card.night h3{color:var(--blue);}
+        .save-card .grand{font-size:1.4rem;font-weight:800;margin-bottom:3px;}
+        .save-card.morning .grand{color:var(--orange);}
+        .save-card.night .grand{color:var(--blue);}
+        .save-card .sub{font-size:10px;color:var(--text2);margin-bottom:10px;}
+        .save-card input{width:100%;padding:8px;background:var(--input);border:1px solid var(--border);color:#fff;border-radius:var(--radius2);font-size:12px;outline:none;text-align:center;margin-bottom:6px;}
+        .btn-save-morning{background:var(--orange);color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;width:100%;}
+        .btn-save-night{background:var(--blue);color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;width:100%;}
+        .btn-save-morning:disabled,.btn-save-night:disabled{opacity:0.5;cursor:not-allowed;}
+
+        /* Selected Day Summary */
+        .day-summary{background:var(--card);border:2px solid var(--gold);border-radius:var(--radius);padding:15px;margin-bottom:15px;text-align:center;}
+        .day-summary h2{font-size:14px;color:var(--text2);margin-bottom:8px;}
+        .day-summary .shift-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
+        .day-summary .shift-box{flex:1;min-width:120px;padding:10px;border-radius:var(--radius2);text-align:center;}
+        .day-summary .shift-box.morning{background:rgba(240,144,80,0.1);border:1px solid rgba(240,144,80,0.3);}
+        .day-summary .shift-box.night{background:rgba(91,155,213,0.1);border:1px solid rgba(91,155,213,0.3);}
+        .shift-box .shift-label{font-size:11px;font-weight:700;margin-bottom:4px;}
+        .shift-box.morning .shift-label{color:var(--orange);}
+        .shift-box.night .shift-label{color:var(--blue);}
+        .shift-box .shift-val{font-size:1.3rem;font-weight:800;}
+        .shift-box.morning .shift-val{color:var(--orange);}
+        .shift-box.night .shift-val{color:var(--blue);}
+        .shift-box .shift-sub{font-size:9px;color:var(--text2);}
+        .no-data{color:var(--text2);font-size:13px;padding:20px;}
+
+        /* Summary Grid */
+        .summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-bottom:15px;}
+        .summary-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center;}
+        .summary-card h3{font-size:11px;color:var(--text2);margin-bottom:5px;}
+        .summary-card .value{font-size:1.1rem;font-weight:800;}
+        .summary-card .liter{color:var(--green);}
+        .summary-card .money{color:var(--gold);}
+
+        .section-title{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+
+        /* History */
+        .history-list{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;}
+        .history-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+        .history-item.morning{border-right:3px solid var(--orange);}
+        .history-item.night{border-right:3px solid var(--blue);}
+        .history-date{font-weight:700;font-size:13px;color:#fff;}
+        .history-shift{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;}
+        .shift-morning{background:rgba(240,144,80,0.2);color:var(--orange);}
+        .shift-night{background:rgba(91,155,213,0.2);color:var(--blue);}
+        .history-details{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+        .history-liter{font-size:11px;color:var(--green);font-weight:700;}
+        .history-money{font-size:11px;color:var(--gold);font-weight:700;}
+        .history-time{font-size:10px;color:var(--text2);}
+        .btn-delete{background:transparent;border:1px solid var(--red);color:var(--red);padding:2px 8px;border-radius:8px;font-size:9px;cursor:pointer;}
+        .btn-delete:hover{background:var(--red);color:#fff;}
+        .empty{text-align:center;padding:30px;color:var(--text2);font-size:13px;}
+        .toast{position:fixed;bottom:15px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:8px 16px;border-radius:16px;font-size:12px;font-weight:600;z-index:2000;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+        .toast.show{opacity:1;}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="nav-brand">⛽ MR KWEXA</a>
+        <span style="color:var(--text2);font-size:12px;">📊 کۆکردنەوەی ڕۆژانە</span>
+        <a href="index.html" class="nav-back">← گەڕانەوە</a>
+    </nav>
+    <div class="main-content" id="mainContent"><div style="text-align:center;padding:50px;color:var(--text2);">⏳ چاوەڕێ...</div></div>
+    <div class="toast" id="toast"></div>
+    <script>
+        firebase.initializeApp({projectId:"mrlwexa",databaseURL:"https://mrlwexa-default-rtdb.firebaseio.com"});
+        var db=firebase.database();
+        var allData={},dailyData=[],toastTimer,selectedDate='';
+        var pages={normal:'نۆڕماڵ',muhsin:'محسن',gaz:'گاز',ghaz:'غاز',nawt:'نەوت',super:'سوپەر'};
+        var pageColors={normal:'#e2b14a',muhsin:'#5b9bd5',gaz:'#f09050',ghaz:'#20c9a6',nawt:'#a87fcb',super:'#4cc98b'};
+        
+        function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove('show');},2000);}
+        function getToday(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+        function getTotalLiter(section){var arr=allData[section]||[];var t=0;for(var i=0;i<arr.length;i++)t+=arr[i].liter||0;return t;}
+        function getGrandLiter(){var t=0;for(var k in pages)t+=getTotalLiter(k);return t;}
+        function getGrandMoney(){var t=0;for(var k in pages){var arr=allData[k]||[];for(var i=0;i<arr.length;i++)t+=(arr[i].liter||0)*(arr[i].nrekhiRabrdu||0);}return t;}
+        function getSectionMoney(k){var arr=allData[k]||[];var t=0;for(var i=0;i<arr.length;i++)t+=(arr[i].liter||0)*(arr[i].nrekhiRabrdu||0);return t;}
+        
+        function saveDaily(shift){
+            var dateInput=document.getElementById('date-'+shift);
+            var timeInput=document.getElementById('time-'+shift);
+            var date=dateInput.value;
+            var time=timeInput.value;
+            if(!date){toast('⚠️ بەروار دیاری بکە');return;}
+            if(!time){toast('⚠️ کات دیاری بکە');return;}
+            var entry={date:date,time:time,shift:shift,totalLiter:getGrandLiter(),totalMoney:getGrandMoney(),sections:{}};
+            for(var k in pages)entry.sections[k]={liter:getTotalLiter(k),money:getSectionMoney(k)};
+            db.ref('daily/'+date+'_'+shift).set(entry);
+            toast('✅ پاشەکەوت کرا: '+shift);
+        }
+        
+        function deleteEntry(key){if(confirm('دڵنیایت؟')){db.ref('daily/'+key).remove();toast('🗑️ سڕایەوە');}}
+        function checkIfSaved(date,shift){for(var i=0;i<dailyData.length;i++){if(dailyData[i].data.date===date&&dailyData[i].data.shift===shift)return true;}return false;}
+        
+        function goToDate(){
+            var input=document.getElementById('datePicker');
+            if(input&&input.value){selectedDate=input.value;renderPage();}
+        }
+        function goToday(){selectedDate=getToday();document.getElementById('datePicker').value=selectedDate;renderPage();}
+        function prevDay(){if(selectedDate){var d=new Date(selectedDate);d.setDate(d.getDate()-1);selectedDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');document.getElementById('datePicker').value=selectedDate;renderPage();}}
+        function nextDay(){if(selectedDate){var d=new Date(selectedDate);d.setDate(d.getDate()+1);selectedDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');document.getElementById('datePicker').value=selectedDate;renderPage();}}
+        
+        function getDayData(date){
+            var result={morning:null,night:null};
+            for(var i=0;i<dailyData.length;i++){if(dailyData[i].data.date===date){result[dailyData[i].data.shift]=dailyData[i].data;}}
+            return result;
+        }
+        
+        function loadData(){
+            db.ref('/').once('value',function(snap){
+                var data=snap.val()||{};
+                allData={};for(var k in pages)allData[k]=data[k]||[];
+                dailyData=[];var d=data.daily||{};
+                var keys=[];for(var k in d)keys.push(k);keys.sort().reverse();
+                for(var i=0;i<keys.length;i++)dailyData.push({key:keys[i],data:d[keys[i]]});
+                if(!selectedDate)selectedDate=getToday();
+                renderPage();
+            });
+        }
+        
+        db.ref('/').on('value',function(snap){
+            var data=snap.val()||{};
+            allData={};for(var k in pages)allData[k]=data[k]||[];
+            dailyData=[];var d=data.daily||{};
+            var keys=[];for(var k in d)keys.push(k);keys.sort().reverse();
+            for(var i=0;i<keys.length;i++)dailyData.push({key:keys[i],data:d[keys[i]]});
+            renderPage();
+        });
+        
+        function renderPage(){
+            if(!selectedDate)selectedDate=getToday();
+            var today=getToday();
+            var dayData=getDayData(selectedDate);
+            var isToday=(selectedDate===today);
+            var savedMorning=isToday?checkIfSaved(today,'morning'):false;
+            var savedNight=isToday?checkIfSaved(today,'night'):false;
+            
+            var h='<div class="page-title">📊 کۆکردنەوەی ڕۆژانە</div>';
+            
+            // Date picker
+            h+='<div class="date-picker-row">';
+            h+='<div class="date-nav"><button class="btn-nav" onclick="prevDay()">◀</button></div>';
+            h+='<input type="date" id="datePicker" value="'+selectedDate+'" onchange="goToDate()">';
+            h+='<div class="date-nav"><button class="btn-nav" onclick="nextDay()">▶</button></div>';
+            h+='<button onclick="goToday()">📅 ئەمڕۆ</button>';
+            h+='</div>';
+            
+            // Save buttons (only for today)
+            if(isToday){
+                h+='<div class="save-section">';
+                h+='<div class="save-card morning"><h3>☀️ بەیانی (٩:٠٠)</h3>';
+                h+='<div class="grand">'+getGrandLiter().toFixed(2)+'</div><div class="sub">💰 '+getGrandMoney().toFixed(2)+'</div>';
+                h+='<input type="date" id="date-morning" value="'+today+'"><input type="time" id="time-morning" value="09:00">';
+                h+='<button class="btn-save-morning" onclick="saveDaily(\'morning\')" '+(savedMorning?'disabled':'')+'>'+(savedMorning?'✅ پاشەکەوت کرا':'💾 پاشەکەوتکردن')+'</button></div>';
+                h+='<div class="save-card night"><h3>🌙 شەو (١٠:٠٠)</h3>';
+                h+='<div class="grand">'+getGrandLiter().toFixed(2)+'</div><div class="sub">💰 '+getGrandMoney().toFixed(2)+'</div>';
+                h+='<input type="date" id="date-night" value="'+today+'"><input type="time" id="time-night" value="22:00">';
+                h+='<button class="btn-save-night" onclick="saveDaily(\'night\')" '+(savedNight?'disabled':'')+'>'+(savedNight?'✅ پاشەکەوت کرا':'💾 پاشەکەوتکردن')+'</button></div>';
+                h+='</div>';
+            }
+            
+            // Selected day summary
+            h+='<div class="day-summary"><h2>📅 '+selectedDate+'</h2>';
+            if(dayData.morning||dayData.night){
+                h+='<div class="shift-row">';
+                if(dayData.morning){
+                    h+='<div class="shift-box morning"><div class="shift-label">☀️ بەیانی - '+dayData.morning.time+'</div>';
+                    h+='<div class="shift-val">'+dayData.morning.totalLiter.toFixed(2)+'</div><div class="shift-sub">لیتر | 💰 '+dayData.morning.totalMoney.toFixed(2)+'</div></div>';
+                }else{h+='<div class="shift-box morning" style="opacity:0.4"><div class="shift-label">☀️ بەیانی</div><div class="shift-val">-</div><div class="shift-sub">پاشەکەوت نەکراوە</div></div>';}
+                if(dayData.night){
+                    h+='<div class="shift-box night"><div class="shift-label">🌙 شەو - '+dayData.night.time+'</div>';
+                    h+='<div class="shift-val">'+dayData.night.totalLiter.toFixed(2)+'</div><div class="shift-sub">لیتر | 💰 '+dayData.night.totalMoney.toFixed(2)+'</div></div>';
+                }else{h+='<div class="shift-box night" style="opacity:0.4"><div class="shift-label">🌙 شەو</div><div class="shift-val">-</div><div class="shift-sub">پاشەکەوت نەکراوە</div></div>';}
+                h+='</div>';
+            }else{h+='<div class="no-data">📭 هیچ پاشەکەوتکردنێک نییە بۆ ئەم ڕۆژە</div>';}
+            h+='</div>';
+            
+            // Current totals
+            h+='<div class="section-title">📋 کۆی ئێستای هەر بەش</div>';
+            h+='<div class="summary-grid">';
+            for(var k in pages){
+                var lit=getTotalLiter(k),mon=getSectionMoney(k);
+                h+='<div class="summary-card" style="border-left:3px solid '+pageColors[k]+'">';
+                h+='<h3>'+pages[k]+'</h3>';
+                h+='<div class="value liter">'+lit.toFixed(2)+'</div><div style="font-size:9px;color:var(--text2);">لیتر</div>';
+                h+='<div class="value money" style="font-size:0.85rem;">'+mon.toFixed(2)+'</div><div style="font-size:8px;color:var(--text2);">پارە</div>';
+                h+='</div>';
+            }
+            h+='</div>';
+            
+            // All history
+            h+='<div class="section-title">📜 هەموو تۆمارەکان</div>';
+            if(dailyData.length===0){h+='<div class="empty">📭 هیچ تۆمارێک نییە</div>';}
+            else{
+                h+='<div class="history-list">';
+                for(var j=0;j<dailyData.length;j++){
+                    var item=dailyData[j],isMorning=item.data.shift==='morning';
+                    h+='<div class="history-item '+(isMorning?'morning':'night')+'">';
+                    h+='<div><div class="history-date">📅 '+item.data.date+'</div>';
+                    h+='<span class="history-shift '+(isMorning?'shift-morning':'shift-night')+'">'+(isMorning?'☀️ بەیانی':'🌙 شەو')+' - '+item.data.time+'</span></div>';
+                    h+='<div class="history-details">';
+                    h+='<div class="history-liter">🧮 '+item.data.totalLiter.toFixed(2)+'</div>';
+                    h+='<div class="history-money">💰 '+item.data.totalMoney.toFixed(2)+'</div></div>';
+                    h+='<button class="btn-delete" onclick="deleteEntry(\''+item.key+'\')">🗑️</button></div>';
+                }
+                h+='</div>';
+            }
+            document.getElementById('mainContent').innerHTML=h;
+        }
+        
+        loadData();
+    </script>
+</body>
+</html>
